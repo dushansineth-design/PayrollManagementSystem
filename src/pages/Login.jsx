@@ -1,27 +1,37 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
+  const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setMessage("");
 
-    const response = await fetch("http://localhost/payroll/login.php", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ username, password }),
-    });
+    try {
+      const response = await fetch("http://localhost/payroll/login.php", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username, password }),
+      });
 
-    const data = await response.json();
+      const data = await response.json();
 
-    if (data.status === "success") {
-      setMessage("Login successful!");
-    } else {
-      setMessage("Invalid credentials");
+      if (data.status === "success") {
+        setMessage("Login successful!");
+        setTimeout(() => {
+          navigate("/dashboard");
+        }, 1000);
+      } else {
+        setMessage("Invalid credentials");
+      }
+    } catch (error) {
+      setMessage("Server error. Try again.");
     }
   };
 
@@ -39,6 +49,7 @@ function Login() {
           className="w-full p-2 border mb-4 rounded"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
+          required
         />
 
         <input
@@ -47,6 +58,7 @@ function Login() {
           className="w-full p-2 border mb-4 rounded"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          required
         />
 
         <button
@@ -57,7 +69,13 @@ function Login() {
         </button>
 
         {message && (
-          <p className="text-center mt-4 text-red-500">{message}</p>
+          <p
+            className={`text-center mt-4 ${
+              message === "Login successful!" ? "text-green-600" : "text-red-500"
+            }`}
+          >
+            {message}
+          </p>
         )}
       </form>
     </div>
